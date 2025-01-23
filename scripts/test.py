@@ -1,8 +1,9 @@
 import imageio
-from shimmy import OpenSpielCompatibilityV0
+from dark_chess.envs import make_dark_chess_env
 from dark_chess.envs.wrappers import RenderingWrapper
 
-env = OpenSpielCompatibilityV0(game_name="dark_chess")
+
+env = make_dark_chess_env()
 env = RenderingWrapper(env)
 
 env.reset()

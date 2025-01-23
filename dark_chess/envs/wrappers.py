@@ -21,6 +21,6 @@ class RenderingWrapper(BaseWrapper[AgentID, ObsType, ActionType]):
         svg_path = chess.svg.board(board, size=size)
         png_bytes = cairosvg.svg2png(svg_path)
 
-        image = imageio.imread(png_bytes, format='png')
+        image = imageio.imread(png_bytes, format="png")
 
         return image
