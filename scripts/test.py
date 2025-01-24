@@ -10,7 +10,9 @@ env.reset()
 obs = []
 frames = []
 
-image = env.render()
+player = -1
+
+image = env.render(player)
 frames.append(image)
 for agent in env.agent_iter():
     observation, reward, termination, truncation, info = env.last()
@@ -22,7 +24,7 @@ for agent in env.agent_iter():
         )  # this is where you would insert your policy
     env.step(action)
     obs.append(observation)
-    image = env.render()
+    image = env.render(player)
     frames.append(image)
 env.close()
 
