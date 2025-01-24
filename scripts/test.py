@@ -9,6 +9,9 @@ env = RenderingWrapper(env)
 env.reset()
 obs = []
 frames = []
+
+image = env.render()
+frames.append(image)
 for agent in env.agent_iter():
     observation, reward, termination, truncation, info = env.last()
     if termination or truncation:
