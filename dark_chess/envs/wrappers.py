@@ -14,11 +14,8 @@ fill="#000" fill-opacity="0.60" /></g>"""
 
 
 class RenderingWrapper(BaseWrapper[AgentID, ObsType, ActionType]):
-    def render(self, player: int = -1, size: int = 384):
-        """render.
-
-        Print the current game state.
-        """
+    def render(self, player: int = -1, size: int = 384) -> np.ndarray:
+        """render the current game state."""
         if not hasattr(self, "game_state"):
             raise UserWarning(
                 "You must reset the environment using reset() before calling render()."
