@@ -5,15 +5,24 @@ import chess.svg
 import imageio
 import numpy as np
 from open_spiel.python.observation import make_observation
-from pettingzoo.utils.env import ActionType, AgentID, ObsType
-from pettingzoo.utils.wrappers.base import BaseWrapper
+import pyspiel
+from shimmy import OpenSpielCompatibilityV0
 
 
 HIDDEN_SQUARE_SVG = """<g id="hidden"><path d="M0 0 L0 45 L45 45 L45 0 Z"
 fill="#000" fill-opacity="0.60" /></g>"""
 
 
-class RenderingWrapper(BaseWrapper[AgentID, ObsType, ActionType]):
+class DarkChessEnv(OpenSpielCompatibilityV0):
+    def __init__(
+        self,
+        env: pyspiel.Game | None = None,
+        game_name: str | None = "dark_chess",
+        render_mode: str | None = None,
+        config: dict | None = None,
+    ):
+        super().__init__(env, game_name, render_mode, config)
+
     def render(self, player: int = -1, size: int = 384) -> np.ndarray:
         """render the current game state."""
         if not hasattr(self, "game_state"):

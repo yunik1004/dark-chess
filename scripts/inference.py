@@ -2,13 +2,11 @@ import argparse
 import imageio
 
 # from lightning.fabric import Fabric
-from dark_chess.envs import make_dark_chess_env
-from dark_chess.envs.wrappers import RenderingWrapper
+from dark_chess.envs.dark_chess import DarkChessEnv
 
 
 def make_env(args: argparse.Namespace, **kwargs):
-    env = make_dark_chess_env()
-    env = RenderingWrapper(env)
+    env = DarkChessEnv()
     return env
 
 
