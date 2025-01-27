@@ -1,8 +1,10 @@
+from typing import Tuple
 import xml.etree.ElementTree as ET
 import cairosvg
 import chess
 import chess.svg
 import imageio
+from gymnasium.utils import seeding
 import numpy as np
 from open_spiel.python.observation import make_observation
 import pyspiel
@@ -16,12 +18,11 @@ fill="#000" fill-opacity="0.60" /></g>"""
 class DarkChessEnv(OpenSpielCompatibilityV0):
     def __init__(
         self,
-        env: pyspiel.Game | None = None,
-        game_name: str | None = "dark_chess",
+        cheat_mode: Tuple[bool | None, bool | None] = (False, False),
         render_mode: str | None = None,
-        config: dict | None = None,
     ):
-        super().__init__(env, game_name, render_mode, config)
+        super().__init__(None, "dark_chess", render_mode, None)
+        self.cheat_mode = cheat_mode
 
     def render(self, player: int = -1, size: int = 384) -> np.ndarray:
         """render the current game state."""
@@ -92,3 +93,78 @@ class DarkChessEnv(OpenSpielCompatibilityV0):
         image = imageio.imread(png_bytes, format="png")
 
         return image
+
+    def reset(
+        self,
+        seed: int | None = None,
+        options: dict | None = None,
+    ):
+        """reset.
+
+        Args:
+            seed (Optional[int]): seed
+            options (Optional[Dict]): options
+        """
+        # initialize np random the seed
+        self.np_random, self.np_seed = seeding.np_random(seed)
+
+        self.game_name = self.game_type.short_name
+
+        # seed argument is only valid for three games
+        if self.game_name in ["deep_sea", "hanabi", "mfg_garnet"] and seed is not None:
+            if self.config is not None:
+                reset_config = self.config.copy()
+                reset_config["seed"] = seed
+            else:
+                reset_config = {"seed": seed}
+            self._env = pyspiel.load_game(self.game_name, reset_config)
+        else:
+            if self.config is not None:
+                self._env = pyspiel.load_game(self.game_name, self.config)
+            else:
+                self._env = pyspiel.load_game(self.game_name)
+
+        # all agents
+        self.agents = self.possible_agents[:]
+
+        # Set cheater
+        self.is_cheater = {
+            self.agents[i]: self.np_random.choice([False, True])
+            if self.cheat_mode[i] is None
+            else self.cheat_mode[i]
+            for i in self.agent_ids
+        }
+
+        # boilerplate stuff
+        self._cumulative_rewards = {a: 0.0 for a in self.agents}
+        self.rewards = {a: 0.0 for a in self.agents}
+        self.terminations = {a: False for a in self.agents}
+        self.truncations = {a: False for a in self.agents}
+        self.infos = {a: {} for a in self.agents}
+
+        # get a new game state, game_length = number of game nodes
+        self.game_length = 1
+        self.game_state = self._env.new_initial_state()
+
+        # holders in case of simultaneous actions
+        self.simultaneous_actions = dict()
+
+        # make sure observation and action spaces are correct for this environment config
+        self._update_observation_spaces()
+        self._update_action_spaces()
+
+        # step through chance nodes
+        # then update obs and act masks
+        # then choose next agent
+        self._execute_chance_node()
+        self._update_action_masks()
+        self._update_observations()
+        self._choose_next_agent()
+
+    def _update_observations(self):
+        super()._update_observations()
+
+        for a in self.agents:
+            if self.is_cheater[a]:
+                # TODO: Change observation
+                pass

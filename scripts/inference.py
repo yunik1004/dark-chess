@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 import imageio
 
 # from lightning.fabric import Fabric
@@ -69,4 +70,7 @@ def get_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     opts = get_args()
+    output_path = Path(opts.output_path)
+    if not output_path.parent.exists():
+        output_path.parent.mkdir(parents=True)
     main(opts)
