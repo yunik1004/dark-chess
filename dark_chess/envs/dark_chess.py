@@ -4,6 +4,7 @@ import cairosvg
 import chess
 import chess.svg
 import imageio
+from gymnasium import spaces
 from gymnasium.utils import seeding
 import numpy as np
 from open_spiel.python.observation import make_observation
@@ -15,7 +16,7 @@ HIDDEN_SQUARE_SVG = """<g id="hidden"><path d="M0 0 L0 45 L45 45 L45 0 Z"
 fill="#000" fill-opacity="0.60" /></g>"""
 
 
-class DarkChessEnv(OpenSpielCompatibilityV0):
+class DarkChessGame(OpenSpielCompatibilityV0):
     def __init__(
         self,
         cheat_mode: Tuple[bool | None, bool | None] = (False, False),
@@ -24,7 +25,19 @@ class DarkChessEnv(OpenSpielCompatibilityV0):
         super().__init__(None, "dark_chess", render_mode, None)
         self.cheat_mode = cheat_mode
 
-    def render(self, player: int = -1, size: int = 384) -> np.ndarray:
+    def _update_action_spaces(self):
+        for agent in self.possible_agents:
+            try:
+                self.action_spaces[agent] = spaces.Discrete(
+                    self._env.num_distinct_actions(),
+                    seed=self.np_random if hasattr(self, "np_random") else None,
+                )
+            except pyspiel.SpielError as e:
+                raise NotImplementedError(
+                    f"{str(e)[:-1]} for action space for {self._env}."
+                )
+
+    def render(self, agent_id: int = -1, size: int = 384) -> np.ndarray:
         """render the current game state."""
         if not hasattr(self, "game_state"):
             raise UserWarning(
@@ -35,8 +48,8 @@ class DarkChessEnv(OpenSpielCompatibilityV0):
         board = chess.Board(str(self.game_state))
         svg = chess.svg.board(board, size=size)
 
-        if player < 0:
-            player = self.game_state.current_player()
+        if agent_id < 0:
+            agent_id = self.game_state.current_player()
         observation = make_observation(self.game_state.get_game())
 
         # Draw board status
@@ -45,8 +58,8 @@ class DarkChessEnv(OpenSpielCompatibilityV0):
 
         # Draw fog
         defs.append(ET.fromstring(HIDDEN_SQUARE_SVG))
-        if player in [0, 1]:
-            observation.set_from(self.game_state, player)
+        if agent_id in self.agent_ids:
+            observation.set_from(self.game_state, agent_id)
 
             public_obs = observation.dict["public_empty_pieces"]  # np.array
             for key, obs in observation.dict.items():
@@ -164,7 +177,49 @@ class DarkChessEnv(OpenSpielCompatibilityV0):
     def _update_observations(self):
         super()._update_observations()
 
-        for a in self.agents:
-            if self.is_cheater[a]:
-                # TODO: Change observation
-                pass
+        """
+        Order: public -> repetition -> side_to_play -> irreversible move -> private -> castling
+        (13 +  // public boards:  piece types * colours + empty
+         14)   // private boards: piece types * colours + empty + unknown
+            * board_size_ * board_size_ +
+        3 +    // public: repetitions count, one-hot encoding
+        2 +    // public: side to play
+        1 +    // public: irreversible move counter -- a fraction of $n over 100
+        2 * 2  // private: left/right castling rights, one-hot encoded.
+        """
+
+        private_boards = {
+            agent_id: np.reshape(self.observations[agent_name][-900:-4], (14, 8, 8))
+            for agent_id, agent_name in zip(self.agent_ids, self.agents)
+        }
+
+        private_indices = {
+            0: [1, 3, 5, 7, 9, 11],
+            1: [0, 2, 4, 6, 8, 10],
+        }
+
+        # Modify private board of the cheat player
+        for agent_id, agent_name in zip(self.agent_ids, self.agents):
+            if self.is_cheater[agent_name]:
+                public_board = np.reshape(
+                    self.observations[agent_name][:832], (13, 8, 8)
+                )
+
+                opposite_id = 1 - agent_id
+                private_self = private_boards[agent_id][private_indices[agent_id]]
+                private_opposite = private_boards[1 - agent_id][
+                    private_indices[opposite_id]
+                ]
+
+                private_board_new = np.zeros((14, 8, 8), dtype=np.float64)
+                private_board_new[private_indices[agent_id]] = private_self
+                private_board_new[private_indices[opposite_id]] = private_opposite
+
+                empty_board = 1.0 - np.vstack([public_board, private_board_new]).max(
+                    axis=0
+                )
+                private_board_new[-2] = empty_board
+
+                self.observations[agent_name][-900:-4] = np.reshape(
+                    private_board_new, (-1)
+                ).tolist()

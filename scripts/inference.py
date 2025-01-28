@@ -3,11 +3,11 @@ from pathlib import Path
 import imageio
 
 # from lightning.fabric import Fabric
-from dark_chess.envs.dark_chess import DarkChessEnv
+from dark_chess.envs.dark_chess import DarkChessGame
 
 
 def make_env(args: argparse.Namespace, **kwargs):
-    env = DarkChessEnv()
+    env = DarkChessGame(cheat_mode=(False, False))
     return env
 
 
@@ -22,10 +22,9 @@ def main(args: argparse.Namespace) -> None:
     # fabric = Fabric(accelerator=args.accelerator, devices="auto", strategy="auto")
 
     env = make_env(args)
+    env.reset(seed=args.seed_env)
 
     recorded_frames = []
-
-    env.reset()
 
     image = env.render(args.player)
     recorded_frames.append(image)
@@ -65,6 +64,7 @@ def get_args() -> argparse.Namespace:
     )
     parser.add_argument("--output_fps", type=int, default=2, help="output video FPS")
     parser.add_argument("--player", type=int, default=-1, help="player to focus")
+    parser.add_argument("--seed_env", type=int, default=0, help="seed for environment")
     return parser.parse_args()
 
 
