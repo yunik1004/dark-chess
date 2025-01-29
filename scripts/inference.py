@@ -1,13 +1,16 @@
 import argparse
 from pathlib import Path
-import imageio
 
 # from lightning.fabric import Fabric
 from dark_chess.envs.dark_chess import DarkChessGame
+from dark_chess.envs.wrappers import VideoRenderingWrapper
 
 
 def make_env(args: argparse.Namespace, **kwargs):
     env = DarkChessGame(cheat_mode=(False, False))
+    env = VideoRenderingWrapper(
+        env=env, agent_id=args.player, video_path=args.output_path, fps=args.output_fps
+    )
     return env
 
 
@@ -24,11 +27,6 @@ def main(args: argparse.Namespace) -> None:
     env = make_env(args)
     env.reset(seed=args.seed_env)
 
-    recorded_frames = []
-
-    image = env.render(args.player)
-    recorded_frames.append(image)
-
     for agent in env.agent_iter():
         observation, reward, termination, truncation, info = env.last()
         if termination or truncation:
@@ -38,13 +36,8 @@ def main(args: argparse.Namespace) -> None:
                 info["action_mask"]
             )  # this is where you would insert your policy
         env.step(action)
-        image = env.render(args.player)
-        recorded_frames.append(image)
 
     env.close()
-
-    # Save video
-    imageio.mimsave(args.output_path, recorded_frames, fps=args.output_fps)
 
 
 def get_args() -> argparse.Namespace:

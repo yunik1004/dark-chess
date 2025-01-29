@@ -10,6 +10,7 @@ authors = [
 dependencies = [
     "cairosvg>=2.7.1",
     "chess>=1.11.1",
+    "imageio[ffmpeg]>=2.35.1",
     "open-spiel>=1.5",
     "pettingzoo>=1.24.3",
     "sb3-contrib>=2.4.0",
@@ -20,7 +21,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "imageio[ffmpeg]>=2.35.1",
     "lightning>=2.3.3",
     "ruff>=0.9.2",
 ]
