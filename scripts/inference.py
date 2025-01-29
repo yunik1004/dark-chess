@@ -7,7 +7,7 @@ from dark_chess.envs.wrappers import VideoRenderingWrapper
 
 
 def make_env(args: argparse.Namespace, **kwargs):
-    env = DarkChessGame(cheat_mode=(False, False))
+    env = DarkChessGame(cheat_mode=tuple(args.cheat_mode))
     env = VideoRenderingWrapper(
         env=env, agent_id=args.player, video_path=args.output_path, fps=args.output_fps
     )
@@ -53,10 +53,17 @@ def get_args() -> argparse.Namespace:
         "--accelerator", type=str, default="auto", help="inference accelerator"
     )
     parser.add_argument(
+        "--cheat_mode",
+        nargs="+",
+        type=bool,
+        default=[False, False],
+        help="are players cheaters?",
+    )
+    parser.add_argument(
         "--output_path", type=str, default="./outputs/out.mp4", help="output video path"
     )
     parser.add_argument("--output_fps", type=int, default=2, help="output video FPS")
-    parser.add_argument("--player", type=int, default=-1, help="player to focus")
+    parser.add_argument("--focus", type=int, default=-1, help="player to focus on")
     parser.add_argument("--seed_env", type=int, default=0, help="seed for environment")
     return parser.parse_args()
 

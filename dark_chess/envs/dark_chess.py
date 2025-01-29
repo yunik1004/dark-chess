@@ -17,6 +17,12 @@ fill="#000" fill-opacity="0.60" /></g>"""
 
 
 class DarkChessGame(OpenSpielCompatibilityV0):
+    metadata = {
+        "render_modes": ["human"],
+        "name": "DarkChessGame",
+        "is_parallelizable": True,
+    }
+
     def __init__(
         self,
         cheat_mode: Tuple[bool | None, bool | None] = (False, False),
