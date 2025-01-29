@@ -25,10 +25,13 @@ class DarkChessGame(OpenSpielCompatibilityV0):
 
     def __init__(
         self,
-        cheat_mode: Tuple[bool | None, bool | None] = (False, False),
+        env: pyspiel.Game | None = None,
+        game_name: str | None = "dark_chess",
         render_mode: str | None = None,
+        config: dict | None = None,
+        cheat_mode: Tuple[bool | None, bool | None] = (False, False),
     ):
-        super().__init__(None, "dark_chess", render_mode, None)
+        super().__init__(env, game_name, render_mode, config)
         self.cheat_mode = cheat_mode
 
     def _update_action_spaces(self):

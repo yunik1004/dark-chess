@@ -1,7 +1,5 @@
 import argparse
 from pathlib import Path
-
-# from lightning.fabric import Fabric
 from dark_chess.envs.dark_chess import DarkChessGame
 from dark_chess.envs.wrappers import VideoRenderingWrapper
 
@@ -9,7 +7,7 @@ from dark_chess.envs.wrappers import VideoRenderingWrapper
 def make_env(args: argparse.Namespace, **kwargs):
     env = DarkChessGame(cheat_mode=tuple(args.cheat_mode))
     env = VideoRenderingWrapper(
-        env=env, agent_id=args.player, video_path=args.output_path, fps=args.output_fps
+        env=env, agent_id=args.focus, video_path=args.output_path, fps=args.output_fps
     )
     return env
 
@@ -22,7 +20,6 @@ def main(args: argparse.Namespace) -> None:
     args : argparse.Namespace
         Arguments
     """
-    # fabric = Fabric(accelerator=args.accelerator, devices="auto", strategy="auto")
 
     env = make_env(args)
     env.reset(seed=args.seed_env)
