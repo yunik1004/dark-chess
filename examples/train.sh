@@ -1,0 +1,12 @@
+python scripts/train.py \
+    --algo=APPO \
+    --use_rnn=False \
+    --num_envs_per_worker=20 \
+    --policy_workers_per_policy=2 \
+    --recurrence=1 \
+    --with_vtrace=False \
+    --batch_size=512 \
+    --save_every_sec=10 \
+    --experiment_summaries_interval=10 \
+    --experiment=example_pettingzoo_dark_chess \
+    --env dark_chess

@@ -1,6 +1,29 @@
+from gymnasium import spaces
 import imageio
+import numpy as np
 from pettingzoo.utils.env import ActionType, AECEnv, AgentID, ObsType
 from pettingzoo.utils.wrappers.base import BaseWrapper
+
+
+class ActionMask2ObservationWrapper(BaseWrapper[AgentID, ObsType, ActionType]):
+    def observe(self, agent: AgentID) -> ObsType | None:
+        return {
+            "observation": self.env.observe(agent),
+            "action_mask": self.env.infos[agent]["action_mask"],
+        }
+
+    def observation_space(self, agent: AgentID) -> spaces.Space:
+        return spaces.Dict(
+            {
+                "observation": self.env.observation_space(agent),
+                "action_mask": spaces.Box(
+                    low=0,
+                    high=1,
+                    shape=(self.env._env.num_distinct_actions(),),
+                    dtype=np.int8,
+                ),
+            }
+        )
 
 
 class VideoRenderingWrapper(BaseWrapper[AgentID, ObsType, ActionType]):

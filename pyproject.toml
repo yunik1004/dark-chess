@@ -13,8 +13,8 @@ dependencies = [
     "imageio[ffmpeg]>=2.35.1",
     "open-spiel>=1.5",
     "pettingzoo>=1.24.3",
-    "sb3-contrib>=2.4.0",
-    "shimmy[open-spiel]>=2.0.0",
+    "sample-factory",
+    "shimmy[open-spiel]>=1.3.0",
     "torch>=2.0",
 ]
 
@@ -25,3 +25,6 @@ dev = [
 
 [tool.setuptools]
 packages = ["dark_chess"]
+
+[tool.uv.sources]
+sample-factory = { git = "https://github.com/alex-petrenko/sample-factory.git" }
