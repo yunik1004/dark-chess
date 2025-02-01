@@ -8,14 +8,14 @@ from pettingzoo.utils.wrappers.base import BaseWrapper
 class ActionMask2ObservationWrapper(BaseWrapper[AgentID, ObsType, ActionType]):
     def observe(self, agent: AgentID) -> ObsType | None:
         return {
-            "observation": self.env.observe(agent),
+            "obs": self.env.observe(agent),
             "action_mask": self.env.infos[agent]["action_mask"],
         }
 
     def observation_space(self, agent: AgentID) -> spaces.Space:
         return spaces.Dict(
             {
-                "observation": self.env.observation_space(agent),
+                "obs": self.env.observation_space(agent),
                 "action_mask": spaces.Box(
                     low=0,
                     high=1,
