@@ -4,4 +4,4 @@ python scripts/enjoy.py \
     --env=dark_chess \
     --max_num_frames 500 \
     --fps 2 \
-    --save_video \
+    --save_video

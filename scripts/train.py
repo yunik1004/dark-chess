@@ -10,7 +10,7 @@ python -m sf_examples.enjoy_pettingzoo_env --algo=APPO --experiment=example_pett
 import sys
 from typing import Optional
 from dark_chess.envs.dark_chess import DarkChessGame
-from dark_chess.envs.wrappers import ActionMask2ObservationWrapper
+from dark_chess.envs.wrappers import ActionMask2ObservationWrapper, RewardShapingWrapper
 
 from pettingzoo.utils import turn_based_aec_to_parallel
 from sample_factory.cfg.arguments import parse_full_cfg, parse_sf_args
@@ -23,6 +23,7 @@ def make_pettingzoo_env(
     full_env_name, cfg=None, env_config=None, render_mode: Optional[str] = None
 ):
     env = DarkChessGame(render_mode=render_mode)
+    env = RewardShapingWrapper(env)
     env = ActionMask2ObservationWrapper(env)
     env = turn_based_aec_to_parallel(env)
     return PettingZooParallelEnv(env)
