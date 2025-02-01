@@ -9,5 +9,4 @@ python scripts/train.py \
     --save_every_sec=10 \
     --experiment_summaries_interval=10 \
     --experiment=example_pettingzoo_dark_chess \
-    --env dark_chess \
-    --device cpu
+    --env dark_chess
